@@ -1,2 +1,2 @@
 # Implicit-Grasp-Diffusion
-The official implementation of "Implicit Grasp Diffusion: Bridging the Gap between Dense Prediction and Sampling-based Grasping"
+The code is super messy now. I am still organizing the code. 
