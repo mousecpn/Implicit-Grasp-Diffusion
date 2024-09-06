@@ -1,3 +1,108 @@
-# Implicit-Grasp-Diffusion
-The code is super messy now. I am still organizing the code. 
-The code will be open-source soon.
+# Implicit Grasp Diffusion: Bridging the Gap between Dense Prediction and Sampling-based Grasping
+Accepted by Conference on Robot Learning 2024 (CoRL 2024)
+
+## Introduction
+
+
+This paper aims to bridge the gap between dense prediction and sampling-based methods. We propose a novel framework named Implicit Grasp Diffusion (IGD) that leverages implicit neural representations to extract expressive local features, and that generates grasps by sampling from diffusion models conditioned on these local features. We evaluated our model on a clutter removal task in both simulated and real-world environments. The experimental results have demonstrated the high grasp accuracy, strong noise robustness, and multi-modal grasp modeling of the proposed method. The code is open-source and a GitHub link will be provided in the final version of the paper.
+
+If you find our work useful in your research, please consider [citing](#citing).
+
+## Installation
+
+1. Create a conda environment.
+
+2. Install packages list in [requirements.txt](requirements.txt). Then install `torch-scatter` following [here](https://github.com/rusty1s/pytorch_scatter), based on `pytorch` version and `cuda` version.
+
+3. Go to the root directory and install the project locally using `pip`
+
+```
+pip install -e .
+```
+
+4. Build ConvONets dependents by running `python scripts/convonet_setup.py build_ext --inplace`.
+
+5. We use the same data as [GIGA](https://github.com/UT-Austin-RPL/GIGA.git). You can download the [data](https://utexas.box.com/s/h3ferwjhuzy6ja8bzcm3nu9xq1wkn94s), then unzip and place the data folder under the repo's root. 
+
+## Self-supervised Data Generation
+
+### Raw synthetic grasping trials
+
+Pile scenario:
+
+```bash
+python scripts/generate_data_parallel.py --scene pile --object-set pile/train --num-grasps 4000000 --num-proc 40 --save-scene ./data/pile/data_pile_train_random_raw_4M
+```
+
+Packed scenario:
+```bash
+python scripts/generate_data_parallel.py --scene packed --object-set packed/train --num-grasps 4000000 --num-proc 40 --save-scene ./data/pile/data_packed_train_random_raw_4M
+```
+
+Please run `python scripts/generate_data_parallel.py -h` to print all options.
+
+### Data clean and processing
+
+First clean and balance the data using:
+
+```bash
+python scripts/clean_balance_data.py /path/to/raw/data
+```
+
+Then construct the dataset (add noise):
+
+```bash
+python scripts/construct_dataset_parallel.py --num-proc 40 --single-view --add-noise dex /path/to/raw/data /path/to/new/data
+```
+
+### Save occupancy data
+
+Sampling occupancy data on the fly can be very slow and block the training, so I sample and store the occupancy data in files beforehand:
+
+```bash
+python scripts/save_occ_data_parallel.py /path/to/raw/data 100000 2 --num-proc 40
+```
+
+Please run `python scripts/save_occ_data_parallel.py -h` to print all options.
+
+
+## Training
+
+### Train IGD
+
+Run:
+
+```bash
+python scripts/train_igd.py --dataset /path/to/new/data --dataset_raw /path/to/raw/data
+```
+
+## Simulated grasping
+
+Run:
+
+```bash
+python scripts/sim_grasp_multiple.py --num-view 1 --object-set (packed/test | pile/test) --scene (packed ｜ pile) --num-rounds 100 --sideview --add-noise dex --force --best --model /path/to/model --type igd --result-path /path/to/result
+```
+
+This commands will run experiment with each seed specified in the arguments.
+
+Run `python scripts/sim_grasp_multiple.py -h` to print a complete list of optional arguments.
+
+## Pre-generated data
+
+Data generation is very costly. So we upload the generated data. Because the occupancy data takes too much space (over 100G), we do not upload the occupancy data, you can generate them following the instruction in this [section](#save-occupancy-data). This generation won't take too long time.
+
+| Scenario | Raw data | Processed data |
+| ----------- | ----------- | ----------- |
+| Pile | [link](https://utexas.box.com/s/w1abs6xfe8d2fo0h9k4bxsdgtnvuwprj) | [link](https://utexas.box.com/s/l3zpzlc1p6mtnu7ashiedasl2m3xrtg2) |
+| Packed | [link](https://utexas.box.com/s/roaozwxiikr27rgeauxs3gsgpwry7gk7) | [link](https://utexas.box.com/s/h48jfsqq85gt9u5lvb82s5ft6k2hqdcn) |
+
+## Related Repositories
+
+1. Our code is largely based on [VGN](https://github.com/ethz-asl/vgn) and [GIGA](https://github.com/UT-Austin-RPL/GIGA.git).
+
+2. We use [ConvONets](https://github.com/autonomousvision/convolutional_occupancy_networks) as our backbone.
+
+## Citing
+
+
