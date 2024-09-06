@@ -87,13 +87,13 @@ Run:
 python scripts/sim_grasp_multiple.py --num-view 1 --object-set (packed/test | pile/test) --scene (packed ｜ pile) --num-rounds 100 --sideview --add-noise dex --force --best --model /path/to/model --type igd --result-path /path/to/result
 ```
 
-This commands will run experiment with each seed specified in the arguments.
+This command will run the experiment with each seed specified in the arguments.
 
 Run `python scripts/sim_grasp_multiple.py -h` to print a complete list of optional arguments.
 
 ## Pre-generated data
 
-Data generation is very costly. So we upload the generated data. Because the occupancy data takes too much space (over 100G), we do not upload the occupancy data, you can generate them following the instruction in this [section](#save-occupancy-data). This generation won't take too long time.
+Data generation is very costly. So it'd be better to use pre-generated data. Because the occupancy data takes too much space (over 100G), we do not upload the occupancy data, you can generate them following the instruction in this [section](#save-occupancy-data). This generation won't take too long time.
 
 | Scenario | Raw data | Processed data |
 | ----------- | ----------- | ----------- |
