@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>igd</name>
+    <version>0.1.0</version>
+    <description>Implicit Grasp Diffusion.</description>
+
+    <maintainer email="mbreyer@ethz.ch">Michel Breyer</maintainer>
+
+    <license>MIT</license>
+    <url>https://github.com/mousecpn/Implicit-Grasp-Diffusion.git</url>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <depend>rospy</depend>
+</package>
