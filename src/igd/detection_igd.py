@@ -33,7 +33,7 @@ class IGD(object):
         self.pos = pos.view(1, self.resolution * self.resolution * self.resolution, 3)
         self.sample_points = None
 
-    def __call__(self, state, last_trial=None, scene_mesh=None, aff_kwargs={}):
+    def __call__(self, state, scene_mesh=None, aff_kwargs={}):
         if hasattr(state, 'tsdf_process'):
             tsdf_process = state.tsdf_process
         else:
@@ -63,7 +63,7 @@ class IGD(object):
             colored_scene_mesh = scene_mesh
             # colored_scene_mesh = visual.affordance_visual(qual_vol, rot_vol, scene_mesh, size, self.resolution, **aff_kwargs)
         self.sample_points = self.net.feature_sampler.sample_points.reshape(qual_vol.shape+(8,3,))
-        grasps, scores, sample_points = select(qual_vol.copy(), self.pos.view(self.resolution, self.resolution, self.resolution, 3).cpu(), rot_vol, width_vol, threshold=self.qual_th, force_detection=self.force_detection, max_filter_size=4 if self.visualize else 4, last_trial=last_trial, sample_points=self.sample_points)
+        grasps, scores, sample_points = select(qual_vol.copy(), self.pos.view(self.resolution, self.resolution, self.resolution, 3).cpu(), rot_vol, width_vol, threshold=self.qual_th, force_detection=self.force_detection, max_filter_size=4 if self.visualize else 4, sample_points=self.sample_points)
         toc = time.time() - tic
 
         grasps, scores = np.asarray(grasps), np.asarray(scores)
