@@ -107,5 +107,13 @@ Data generation is very costly. So it'd be better to use pre-generated data. Bec
 2. We use [ConvONets](https://github.com/autonomousvision/convolutional_occupancy_networks) as our backbone.
 
 ## Citing
+```
+@inproceedings{song2024b,
+  author = {Song, Pinhao and Li, Pengteng and Detry, Renaud},
+  title = {Implicit Grasp Diffusion: Bridging the Gap between Dense Prediction and Sampling-based Grasping},
+  year = {2024},
+  booktitle = {Conference on Robot Learning},
+}
+```
 
 
