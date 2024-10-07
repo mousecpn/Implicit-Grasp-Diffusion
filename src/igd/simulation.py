@@ -63,8 +63,7 @@ class ClutterRemovalSim(object):
         self.world = btsim.BtWorld(self.gui, save_dir, save_freq)
         self.gripper = Gripper(self.world)
         self.size = 6 * self.gripper.finger_depth
-        # intrinsic = CameraIntrinsic(640, 480, 540.0, 540.0, 320.0, 240.0)
-        self.intrinsic = CameraIntrinsic(848, 480, 426.678, 426.67822265625, 427.2525634765625, 234.44296264648438)
+        self.intrinsic = CameraIntrinsic(640, 480, 540.0, 540.0, 320.0, 240.0)
         self.camera = self.world.add_camera(self.intrinsic, 0.1, 2.0)
         self.dot_pattern_ = cv2.imread("/home/pinhao/Desktop/simkinect/data/kinect-pattern_3x3.png", 0)
     @property
@@ -267,8 +266,7 @@ class ClutterRemovalSim(object):
 
         if self.sideview:
             origin = Transform(Rotation.identity(), np.r_[self.size / 2, self.size / 2, self.size / 3])
-            # theta = np.pi / 3.0
-            theta = np.pi / 100
+            theta = np.pi / 3.0
         else:
             origin = Transform(Rotation.identity(), np.r_[self.size / 2, self.size / 2, 0])
             theta = np.pi / 6.0
@@ -283,53 +281,12 @@ class ClutterRemovalSim(object):
             phi_list = 2.0 * np.pi * np.arange(n) / N
         extrinsics = [camera_on_sphere(origin, r, theta, phi) for phi in phi_list]
 
-        # T_base_cam = extrinsics[0].inverse()
-        # camera_pose = T_base_cam.translation
-        # x_direction = T_base_cam.rotation.as_matrix()[:,0]
-        # y_direction = T_base_cam.rotation.as_matrix()[:,1]
-        # z_direction = T_base_cam.rotation.as_matrix()[:,2]
-
-
-        # self.world.p.removeAllUserDebugItems()
-        # x_end_p = (np.array(camera_pose) + np.array(x_direction*2)).tolist()
-        # x_line_id = self.world.p.addUserDebugLine(camera_pose,x_end_p,[1,0,0])# y 轴
-        # y_end_p = (np.array(camera_pose) + np.array(y_direction*2)).tolist()
-        # y_line_id = self.world.p.addUserDebugLine(camera_pose,y_end_p,[0,1,0])# z轴
-        # z_end_p = (np.array(camera_pose) + np.array(z_direction*2)).tolist()
-        # z_line_id = self.world.p.addUserDebugLine(camera_pose,z_end_p,[0,0,1])
-        timing = 0.0 # [x,y,z,qx,qy,qz,qw]: -0.15, 0.1616, 0.5200, -0.866, 0, 0, -0.5
         for extrinsic in extrinsics:
             depth_img = self.camera.render(extrinsic)[1]
-            # color_img, depth_img = self.camera.render(extrinsic)
-            # plt.imsave("color_packed.png", color_img)
-            # depth_img[depth_img>1.4] = 0.0
   
             # add noise 
             depth_img = apply_noise(depth_img, self.add_noise)
 
-
-            # mask = np.zeros(depth_img.shape)
-            # mask[42:456, 223:747] = 1
-            # pcl = create_point_cloud_from_depth_image(depth_img, self.intrinsic, organized=True)
-            # pcl = pcl[mask.astype('bool')]
-            # cloud = o3d.geometry.PointCloud()
-            # cloud.points = o3d.utility.Vector3dVector(pcl.astype(np.float32))
-            # plt.imsave('depth_trans_blur.png',depth_img)
-            # depth_img = np.load("/home/pinhao/vgn/real_depth.npy")
-            # plt.imshow(depth_img)
-            # plt.show()
-            
-            # depth_img = apply_dex_noise(depth_img,
-            #     gamma_shape=1000,
-            #     gamma_scale=0.001,
-            #     gp_sigma=0.01,
-            #     gp_scale=4.0,
-            #     gp_rate=1.0)
-
-
-            # plt.imshow(depth_img)
-            # plt.show()
-            
             tic = time.time()
             tsdf.integrate(depth_img, self.camera.intrinsic, extrinsic)
             timing += time.time() - tic
