@@ -280,7 +280,7 @@ class ClutterRemovalSim(object):
         else:
             phi_list = 2.0 * np.pi * np.arange(n) / N
         extrinsics = [camera_on_sphere(origin, r, theta, phi) for phi in phi_list]
-
+        timing = 0.0
         for extrinsic in extrinsics:
             depth_img = self.camera.render(extrinsic)[1]
   

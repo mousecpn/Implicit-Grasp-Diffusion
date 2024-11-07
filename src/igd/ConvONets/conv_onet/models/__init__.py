@@ -3,8 +3,6 @@ import torch.nn as nn
 from torch import distributions as dist
 from igd.ConvONets.conv_onet.models import decoder
 from igd.ConvONets.conv_onet.models.convOccDiff import ConvolutionalOccupancyDiffuser
-from vgn.ConvONets.conv_onet.models.so3_conv_occ_diff import SO3GraspDiffuser
-from vgn.ConvONets.conv_onet.models.globalConvOccDiff import GlobalConvolutionalOccupancyDiffuser
 
 # Decoder dictionary
 decoder_dict = {

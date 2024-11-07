@@ -2,7 +2,6 @@ import os
 import trimesh
 import numpy as np
 from urdfpy import URDF
-# from vgn.ConvONets.utils.libmesh import check_mesh_contains
 try:
     from igd.ConvONets.utils.libmesh import check_mesh_contains
 except:

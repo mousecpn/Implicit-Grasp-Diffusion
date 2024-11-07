@@ -14,10 +14,10 @@ numpy_include_dir = numpy.get_include()
 # Extensions
 # pykdtree (kd tree)
 pykdtree = Extension(
-    'src.vgn.ConvONets.utils.libkdtree.pykdtree.kdtree',
+    'src.igd.ConvONets.utils.libkdtree.pykdtree.kdtree',
     sources=[
-        'src/vgn/ConvONets/utils/libkdtree/pykdtree/kdtree.c',
-        'src/vgn/ConvONets/utils/libkdtree/pykdtree/_kdtree_core.c'
+        'src/igd/ConvONets/utils/libkdtree/pykdtree/kdtree.c',
+        'src/igd/ConvONets/utils/libkdtree/pykdtree/_kdtree_core.c'
     ],
     language='c',
     extra_compile_args=['-std=c99', '-O3', '-fopenmp'],
@@ -27,11 +27,11 @@ pykdtree = Extension(
 
 # mcubes (marching cubes algorithm)
 mcubes_module = Extension(
-    'src.vgn.ConvONets.utils.libmcubes.mcubes',
+    'src.igd.ConvONets.utils.libmcubes.mcubes',
     sources=[
-        'src/vgn/ConvONets/utils/libmcubes/mcubes.pyx',
-        'src/vgn/ConvONets/utils/libmcubes/pywrapper.cpp',
-        'src/vgn/ConvONets/utils/libmcubes/marchingcubes.cpp'
+        'src/igd/ConvONets/utils/libmcubes/mcubes.pyx',
+        'src/igd/ConvONets/utils/libmcubes/pywrapper.cpp',
+        'src/igd/ConvONets/utils/libmcubes/marchingcubes.cpp'
     ],
     language='c++',
     extra_compile_args=['-std=c++11'],
@@ -40,9 +40,9 @@ mcubes_module = Extension(
 
 # triangle hash (efficient mesh intersection)
 triangle_hash_module = Extension(
-    'src.vgn.ConvONets.utils.libmesh.triangle_hash',
+    'src.igd.ConvONets.utils.libmesh.triangle_hash',
     sources=[
-        'src/vgn/ConvONets/utils/libmesh/triangle_hash.pyx'
+        'src/igd/ConvONets/utils/libmesh/triangle_hash.pyx'
     ],
     libraries=['m'],  # Unix-like specific
     include_dirs=[numpy_include_dir]
@@ -50,26 +50,26 @@ triangle_hash_module = Extension(
 
 # mise (efficient mesh extraction)
 mise_module = Extension(
-    'src.vgn.ConvONets.utils.libmise.mise',
+    'src.igd.ConvONets.utils.libmise.mise',
     sources=[
-        'src/vgn/ConvONets/utils/libmise/mise.pyx'
+        'src/igd/ConvONets/utils/libmise/mise.pyx'
     ],
 )
 
 # simplify (efficient mesh simplification)
 simplify_mesh_module = Extension(
-    'src.vgn.ConvONets.utils.libsimplify.simplify_mesh',
+    'src.igd.ConvONets.utils.libsimplify.simplify_mesh',
     sources=[
-        'src/vgn/ConvONets/utils/libsimplify/simplify_mesh.pyx'
+        'src/igd/ConvONets/utils/libsimplify/simplify_mesh.pyx'
     ],
     include_dirs=[numpy_include_dir]
 )
 
 # voxelization (efficient mesh voxelization)
 voxelize_module = Extension(
-    'src.vgn.ConvONets.utils.libvoxelize.voxelize',
+    'src.igd.ConvONets.utils.libvoxelize.voxelize',
     sources=[
-        'src/vgn/ConvONets/utils/libvoxelize/voxelize.pyx'
+        'src/igd/ConvONets/utils/libvoxelize/voxelize.pyx'
     ],
     libraries=['m']  # Unix-like specific
 )

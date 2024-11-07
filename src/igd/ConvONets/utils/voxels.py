@@ -3,7 +3,7 @@ import numpy as np
 import trimesh
 from scipy import ndimage
 from skimage.measure import block_reduce
-from vgn.ConvONets.utils.libvoxelize.voxelize import voxelize_mesh_
+from igd.ConvONets.utils.libvoxelize.voxelize import voxelize_mesh_
 from igd.ConvONets.utils.libmesh import check_mesh_contains
 from igd.ConvONets.common import make_3d_grid
 

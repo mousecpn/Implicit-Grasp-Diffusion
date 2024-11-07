@@ -1,4 +1,4 @@
-from vgn.ConvONets.utils.libmcubes.mcubes import (
+from igd.ConvONets.utils.libmcubes.mcubes import (
     marching_cubes, marching_cubes_func
 )
 from igd.ConvONets.utils.libmcubes.exporter import (

@@ -15,17 +15,21 @@ If you find our work useful in your research, please consider [citing](#citing).
 
 1. Create a conda environment.
 
-2. Install packages list in [requirements.txt](requirements.txt). Then install `torch-scatter` following [here](https://github.com/rusty1s/pytorch_scatter), based on `pytorch` version and `cuda` version.
+2. Install [ROS](https://wiki.ros.org/ROS/Installation).
 
-3. Go to the root directory and install the project locally using `pip`
+3. Install [pytorch](https://pytorch.org/get-started/previous-versions/). We use Pytorch 1.13.1 with CUDA 11.7.
+
+4. Install packages list in [requirements.txt](requirements.txt). Then install `torch-scatter` following [here](https://github.com/rusty1s/pytorch_scatter), based on `pytorch` version and `cuda` version. (PS: if there is an error about sklearn when installing open3d, you can export SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True)
+
+5. Go to the root directory and install the project locally using `pip`
 
 ```
 pip install -e .
 ```
 
-4. Build ConvONets dependents by running `python scripts/convonet_setup.py build_ext --inplace`.
+6. Build ConvONets dependents by running `python scripts/convonet_setup.py build_ext --inplace`.
 
-5. We use the same data as [GIGA](https://github.com/UT-Austin-RPL/GIGA.git). You can download the [data](https://utexas.box.com/s/h3ferwjhuzy6ja8bzcm3nu9xq1wkn94s), then unzip and place the data folder under the repo's root. 
+7. We use the same data as [GIGA](https://github.com/UT-Austin-RPL/GIGA.git). You can download the [data](https://utexas.box.com/s/h3ferwjhuzy6ja8bzcm3nu9xq1wkn94s), then unzip and place the data folder under the repo's root. 
 
 ## Self-supervised Data Generation
 

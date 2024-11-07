@@ -4,11 +4,24 @@ from torch import nn, einsum
 
 from einops import rearrange, repeat
 from igd.ConvONets.conv_onet.models import decoder
-from vgn.ConvONets.conv_onet.models.tpvformer import constant_init, xavier_init
 from theseus import SO3
 import numpy as np
 from igd.utils.transform import Rotation, Transform
 import matplotlib.pyplot as plt
+
+def constant_init(module, val, bias=0):
+    nn.init.constant_(module.weight, val)
+    if hasattr(module, 'bias') and module.bias is not None:
+        nn.init.constant_(module.bias, bias)
+
+def xavier_init(module, gain=1, bias=0, distribution='normal'):
+    assert distribution in ['uniform', 'normal']
+    if distribution == 'uniform':
+        nn.init.xavier_uniform_(module.weight, gain=gain)
+    else:
+        nn.init.xavier_normal_(module.weight, gain=gain)
+    if hasattr(module, 'bias') and module.bias is not None:
+        nn.init.constant_(module.bias, bias)
 
 def create_grid_like(t, dim = 0):
     f, h, w, device = *t.shape[-3:], t.device

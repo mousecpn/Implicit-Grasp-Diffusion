@@ -5,7 +5,6 @@ import trimesh
 from scipy import ndimage
 import torch
 
-#from vgn import vis
 from igd.grasp import *
 from igd.utils.transform import Transform, Rotation
 from igd.networks import load_network

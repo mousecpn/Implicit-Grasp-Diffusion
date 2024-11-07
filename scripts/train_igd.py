@@ -10,7 +10,6 @@ import torch
 from torch.utils import tensorboard
 import torch.nn.functional as F
 
-#from vgn.dataset_pc import DatasetPCOcc
 from igd.dataset_voxel import DatasetVoxelOccFile
 from igd.vgn_dataset import SceneBasedDatasetVoxelOccFile
 from igd.networks import get_network, load_network
@@ -111,13 +110,13 @@ def main(args):
     # checkpoint model
     checkpoint_handler = ModelCheckpoint(
         logdir,
-        "vgn",
+        "igd",
         n_saved=1,
         require_empty=True,
     )
     best_checkpoint_handler = ModelCheckpoint(
         logdir,
-        "best_vgn",
+        "best_igd",
         n_saved=1,
         score_name="val_acc",
         score_function=default_score_fn,
