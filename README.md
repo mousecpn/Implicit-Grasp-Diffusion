@@ -104,6 +104,13 @@ Data generation is very costly. So it'd be better to use pre-generated data. Bec
 | Pile | [link](https://utexas.box.com/s/w1abs6xfe8d2fo0h9k4bxsdgtnvuwprj) | [link](https://utexas.box.com/s/l3zpzlc1p6mtnu7ashiedasl2m3xrtg2) |
 | Packed | [link](https://utexas.box.com/s/roaozwxiikr27rgeauxs3gsgpwry7gk7) | [link](https://utexas.box.com/s/h48jfsqq85gt9u5lvb82s5ft6k2hqdcn) |
 
+## Pretrained model
+
+Packed scene: https://drive.google.com/file/d/1kdukKdpIa4_r06l-DUJxuUn_w14eneTs/view?usp=drive_link
+
+Pile scene: https://drive.google.com/file/d/1utAwzIDBO_awws9h0I-DYw330Y4D-kHu/view?usp=drive_link
+
+
 ## Related Repositories
 
 1. Our code is largely based on [VGN](https://github.com/ethz-asl/vgn) and [GIGA](https://github.com/UT-Austin-RPL/GIGA.git).
