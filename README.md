@@ -7,7 +7,7 @@ Accepted by Conference on Robot Learning 2024 (CoRL 2024)
 ## Introduction
 
 
-This paper aims to bridge the gap between dense prediction and sampling-based methods. We propose a novel framework named Implicit Grasp Diffusion (IGD) that leverages implicit neural representations to extract expressive local features, and that generates grasps by sampling from diffusion models conditioned on these local features. We evaluated our model on a clutter removal task in both simulated and real-world environments. The experimental results have demonstrated the high grasp accuracy, strong noise robustness, and multi-modal grasp modeling of the proposed method. The code is open-source and a GitHub link will be provided in the final version of the paper.
+This paper aims to bridge the gap between dense prediction and sampling-based methods. We propose a novel framework named Implicit Grasp Diffusion (IGD) that leverages implicit neural representations to extract expressive local features, and that generates grasps by sampling from diffusion models conditioned on these local features. We evaluated our model on a clutter removal task in both simulated and real-world environments. The experimental results have demonstrated the high grasp accuracy, strong noise robustness, and multi-modal grasp modeling of the proposed method.
 
 If you find our work useful in your research, please consider [citing](#citing).
 
