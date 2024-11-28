@@ -270,7 +270,7 @@ class ClutterRemovalSim(object):
         else:
             origin = Transform(Rotation.identity(), np.r_[self.size / 2, self.size / 2, 0])
             theta = np.pi / 6.0
-        r = 1.0 * self.size
+        r = 2.0 * self.size
 
         N = N if N else n
         if self.sideview:

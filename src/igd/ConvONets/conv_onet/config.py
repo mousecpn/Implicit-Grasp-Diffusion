@@ -46,9 +46,6 @@ def get_model(cfg, device=None, dataset=None, **kwargs):
     tsdf_only = 'tsdf_only' in cfg.keys() and cfg['tsdf_only']
     detach_tsdf = 'detach_tsdf' in cfg.keys() and cfg['detach_tsdf']
     diff = 'diff' in cfg.keys() and cfg['diff']
-    diffso3 = 'diffso3' in cfg.keys() and cfg['diffso3']
-    diffglobal = 'diffglobal' in cfg.keys() and cfg['diffglobal']
-
 
     if tsdf_only:
         decoders = []
@@ -91,14 +88,6 @@ def get_model(cfg, device=None, dataset=None, **kwargs):
 
     if diff:
         model = models.ConvolutionalOccupancyDiffuser(
-            decoders, encoder, device=device, detach_tsdf=detach_tsdf
-        )
-    elif diffso3:
-        model = models.SO3GraspDiffuser(
-            decoders, encoder, device=device, detach_tsdf=detach_tsdf
-        )
-    elif diffglobal:
-        model = models.GlobalConvolutionalOccupancyDiffuser(
             decoders, encoder, device=device, detach_tsdf=detach_tsdf
         )
     else:

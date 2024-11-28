@@ -8,9 +8,6 @@ import time
 import torch
 import torch.nn as nn
 import numpy as np
-
-import theseus as th
-from theseus import SO3
 import os
 
 class SO3_R3():

@@ -13,7 +13,7 @@ If you find our work useful in your research, please consider [citing](#citing).
 
 ## Installation
 
-1. Create a conda environment.
+1. Create a conda environment with python=3.8
 
 2. Install [ROS](https://wiki.ros.org/ROS/Installation).
 

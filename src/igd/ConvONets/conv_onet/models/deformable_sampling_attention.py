@@ -4,10 +4,10 @@ from torch import nn, einsum
 
 from einops import rearrange, repeat
 from igd.ConvONets.conv_onet.models import decoder
-from theseus import SO3
 import numpy as np
 from igd.utils.transform import Rotation, Transform
 import matplotlib.pyplot as plt
+from igd.ConvONets.conv_onet.models.utils import quaternion_to_matrix,matrix_to_quaternion
 
 def constant_init(module, val, bias=0):
     nn.init.constant_(module.weight, val)
@@ -369,7 +369,7 @@ class SO3DeformableAttn(nn.Module):
         grid_scaled = self.grid_scaled.unsqueeze(0).repeat(bs*ns,1,1,1,1,1).reshape(bs,ns,-1,3)
         
         # rotation
-        rot_SO3 = SO3(quat_scipy2theseus(query_ori.reshape(-1,4))).to_matrix().reshape(bs,ns,3,3) # (bs*ns, 3, 3) world2grasp   
+        rot_SO3 = quaternion_to_matrix(quat_scipy2theseus(query_ori.reshape(-1,4))).reshape(bs,ns,3,3) # (bs*ns, 3, 3) world2grasp   
         grid_scaled = torch.einsum('bnpd,bngd->bngp', rot_SO3, grid_scaled)
         
         anchor_sample_point = query_pos.unsqueeze(2) + grid_scaled # (bs, ns,sp*sp*sp,3)
@@ -495,7 +495,7 @@ class GraspSO3DeformableAttn(SO3DeformableAttn):
         # grid_scaled = grid_scaled.reshape(bs, ns, -1, 3) # grasp2offset
         
         # rotation
-        rot_SO3 = SO3(quat_scipy2theseus(query_ori.reshape(-1,4))).to_matrix().reshape(bs,ns,3,3) # (bs*ns, 3, 3) world2grasp   
+        rot_SO3 = quaternion_to_matrix(quat_scipy2theseus(query_ori.reshape(-1,4))).reshape(bs,ns,3,3) # (bs*ns, 3, 3) world2grasp   
         # control_points_ = control_points.clone()
         control_points = torch.einsum('bnpd,bngd->bngp', rot_SO3, control_points)
         # control_points = torch.einsum('bndp,bngd->bngp', rot_SO3, control_points)

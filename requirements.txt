@@ -15,7 +15,7 @@ cython
 scikit-image
 pykdtree
 ninja
-theseus-ai
 opencv-python
 einops
 Cython
+diffusers

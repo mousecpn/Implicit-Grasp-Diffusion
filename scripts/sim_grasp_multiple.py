@@ -13,7 +13,7 @@ from igd.utils.misc import set_random_seed
 # sys.path
 import rospy
 import os
-os.environ['CUDA_LAUNCH_BLOCKING']='1'
+# os.environ['CUDA_LAUNCH_BLOCKING']='1'
 # os.environ['OMP_NUM_THREADS']='24'
 # os.environ['TORCH_CUDA_ALLOC_SYNC'] = '1'
 def main(args):
@@ -107,8 +107,8 @@ if __name__ == "__main__":
     parser.add_argument("--num-objects", type=int, default=5)
     parser.add_argument("--num-view", type=int, default=1)
     parser.add_argument("--num-rounds", type=int, default=100)
-    # parser.add_argument("--seeds", type=int, nargs='+', default=[0, 1, 2, 3, 4])
-    parser.add_argument("--seeds", type=int, nargs='+', default=[4])
+    parser.add_argument("--seeds", type=int, nargs='+', default=[0, 1, 2, 3, 4])
+    # parser.add_argument("--seeds", type=int, nargs='+', default=[4])
 
     parser.add_argument("--sim-gui", action="store_true")
     # parser.add_argument("--grad-refine", action="store_true")

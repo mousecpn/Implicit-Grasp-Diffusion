@@ -18,9 +18,8 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
         device (device): torch device
     '''
 
-    def __init__(self, decoders, encoder=None, device=None, detach_tsdf=False, rot_representation="quaternion"):
+    def __init__(self, decoders, encoder=None, device=None, detach_tsdf=False):
         super().__init__()
-        self.rot_representation = rot_representation # ["SO3", "so3"]  
         # self.feature_sampler = decoder.FCDecoder()   
         sp = 2
         self.quality = False
@@ -29,8 +28,7 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
         self.decoder_qual = decoder.LocalDecoder(dim=3, out_dim=1, c_dim=32, hidden_size=32, concat_feat=True, feature_sampler=DeformableAttn(96, out_dim=96, feature_sampler=decoder.FCDecoder(), num_heads=num_heads, grid_scale=grid_scale, sample_point_per_axis=sp))
         self.decoder_grasp_qual = decoder.LocalDecoder(dim=3, out_dim=1, c_dim=32, hidden_size=32, concat_feat=True, feature_sampler=GraspSO3DeformableAttn(96, out_dim=96, feature_sampler=decoder.FCDecoder(), num_heads=num_heads, zero_offset=True, fixed_control_points=False))
         self.feature_sampler = DeformableAttn(feature_dim=96, out_dim=96, feature_sampler=decoder.FCDecoder(), num_heads=num_heads, grid_scale=grid_scale, sample_point_per_axis=sp)
-        if self.rot_representation == "quaternion":   # *(sp*sp*sp+1)
-            self.decoder_rot = decoder.TimeLocalDecoder(dim=7, out_dim=7, c_dim=96, hidden_size=128, concat_feat=True, quality=self.quality)
+        self.decoder_rot = decoder.TimeLocalDecoder(dim=7, out_dim=7, c_dim=96, hidden_size=128, concat_feat=True, quality=self.quality)
         self.decoder_width = decoder.LocalDecoder(dim=3, out_dim=1, c_dim=32, hidden_size=32, concat_feat=True)
         self.grasp_sampler = Diffusion(schedulers="DDPM", condition_mask=[1,1,1,0,0,0,0],  prediction_type='epsilon',beta_schedule='linear', quality=self.quality)
         if len(decoders) == 4:
@@ -63,7 +61,6 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
             self.batch_size = p.size(0)
             self.sample_num = p.size(1)
         c = self.encode_inputs(inputs)
-        # global_feature = self.global_feat(c)
         self.outputs = {}
         self.voxel_grids = inputs
 
@@ -73,8 +70,6 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
             loss_dict = {}
         if self.training is False:
             noise = torch.randn((self.batch_size, self.sample_num, 6), device=inputs.device)
-            HT = SO3_R3().exp_map(noise.reshape(-1,6)).to_matrix().reshape(self.batch_size, self.sample_num, 4, 4)
-            HT[...,:3,-1] = p.reshape(self.batch_size, self.sample_num, 3)
                 
 
         if self.training:
@@ -84,7 +79,7 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
             loss_dict['loss_rot'] = loss_rot.mean()
             loss_dict['loss_width'] = (loss_width[label.bool()]).mean()
         else:
-            qual, rot, width = self.decode(HT, c, target=target)
+            qual, rot, width = self.decode(p, c, target=target)
         if p_tsdf is not None:
             if self.detach_tsdf:
                 for k, v in c.items():
@@ -135,17 +130,8 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
             p (tensor): points
             c (tensor): latent conditioned code c
         '''
-        # p = H_th.t.reshape(self.batch_size,self.sample_num,-1)
         label, rot_gt, width_gt, occ_value = target
 
-        # positive_H_th = H_th.to_matrix()
-        # positive_H_th = SO3_R3(R=positive_H_th[label.bool(), :3, :3], t=positive_H_th[label.bool(), :3, -1])
-        # p = H_th.t.reshape(self.batch_size, self.sample_num, -1)20
-        ###### perturb position feature #######optimizer
-        # p_perturb = p.clone()
-        # p_perturb = p + (torch.randn_like(p)*0.05).clamp(-0.05, 0.05)
-        
-        ###################################
         feature = self.feature_sampler(p, c)
 
         positive_grasp = torch.cat((p.repeat(1,2,1), rot_gt), dim=-1)
@@ -188,45 +174,7 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
         self.outputs['qual'] = (grasp_qual[:,0]*qual[:,0]).sqrt()
 
         return loss_qual, loss_rot, loss_width
-    
 
-    def negetive_sampling(self, grasp, label):
-        neg_sample = grasp.clone()
-        bs, ns = grasp.shape[0], grasp.shape[1]
-        sample_type = np.random.choice([0,1])
-        trans_perturb_level = 0.1
-        rot_perturb_level = 0.5
-        width_perturb_level = 0.02
-        neg_label = label.clone()
-
-        if sample_type == 0:
-            # translation sampling
-            noise = torch.randn_like(grasp[...,:3]) * trans_perturb_level
-            neg_sample[..., :3] += noise
-            conf = torch.exp(- 1000 * noise.pow(2).sum(-1))
-        if sample_type == 1:
-            # rotation sampling
-            angle = np.pi * np.random.randn(bs*ns)*rot_perturb_level
-            z_rot = np.stack((np.zeros_like(angle),np.zeros_like(angle),angle), axis=-1)
-            z_rot = Rotation.from_rotvec(z_rot)
-            R = Rotation.from_quat(neg_sample[..., 3:].reshape(-1,4).detach().cpu().numpy())
-
-            neg_rot = (R*z_rot).as_quat()
-            neg_rot = torch.from_numpy(neg_rot.astype('float32')).to(grasp.device)
-
-            # noise = torch.randn_like(grasp[...,3:]) * rot_perturb_level
-            # neg_sample[..., 3:] += noise
-            neg_sample[..., 3:] = neg_rot.reshape(bs,ns,4)
-            kappa = torch.FloatTensor([1000]).to(grasp.device)
-            log_C3kappa = (
-                torch.log(kappa / (2 * torch.pi))
-                - kappa - torch.log(1 - torch.exp(-2 * kappa))
-            )
-            
-            conf = torch.exp(log_C3kappa + kappa * (grasp[...,3:] * neg_sample[..., 3:]).sum(-1)).clamp(0,1)
-        neg_label = neg_label * conf
-
-        return neg_sample, neg_label
 
     def massive_negetive_sampling(self, grasp, label):
         neg_samples = torch.zeros_like(grasp[:,:0,:])
@@ -274,14 +222,14 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
 
         return neg_samples, torch.zeros_like(neg_samples[...,0])
 
-    def decode(self, HT, c, target=None, sample_rounds = 9, **kwargs):
+    def decode(self, p, c, target=None, sample_rounds = 1, **kwargs):
         ''' Returns occupancy probabilities for the sampled points.
 
         Args:
             p (tensor): points
             c (tensor): latent conditioned code c
         '''
-        p = HT[...,:3,-1].reshape(self.batch_size,self.sample_num,-1)
+        p = p.reshape(self.batch_size,self.sample_num,-1)
 
         feature = self.feature_sampler(p, c)
 
@@ -291,10 +239,10 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
             rot_gt_ = rot_gt[:,idx,:]
             data = torch.cat((p, rot_gt_.reshape(self.batch_size, self.sample_num, -1)),dim=-1)
             if self.quality:
-                grasp, reg_qual = self.grasp_sampler.sample_data(HT, feature, self.decoder_rot)
+                grasp, reg_qual = self.grasp_sampler.sample_data(p, feature, self.decoder_rot)
                 reg_qual = torch.sigmoid(reg_qual)
             else:
-                grasp = self.grasp_sampler.sample_data(HT, feature, self.decoder_rot)
+                grasp = self.grasp_sampler.sample_data(p, feature, self.decoder_rot)
             width = self.decoder_width(data, c, **kwargs)
             grasp_qual = self.decoder_grasp_qual(data, c, **kwargs).reshape(self.batch_size, self.sample_num)
             grasp_qual = torch.sigmoid(grasp_qual)
@@ -304,13 +252,13 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
             rot = grasp[...,3:]
 
         else:
-            qual, rot, width = self.decode_inference(HT, c, sample_rounds = sample_rounds, low_th=0.002)
+            qual, rot, width = self.decode_inference(p, c, sample_rounds = sample_rounds, low_th=0.002)
 
         return qual, rot, width
     
-    def decode_inference(self, HT, c, sample_rounds = 1, low_th=0.1, **kwargs):
+    def decode_inference(self, p, c, sample_rounds = 1, low_th=0.1, **kwargs):
         assert self.batch_size==1, "batch size should be 1 in this mode" 
-        p = HT[...,:3,-1].reshape(self.batch_size, self.sample_num,-1)
+        p = p.reshape(self.batch_size, self.sample_num,-1)
         
         feature = self.feature_sampler(p, c)
         feature_dim = feature.shape[-1]
@@ -320,12 +268,12 @@ class ConvolutionalOccupancyDiffuser(nn.Module):
         
         mask = (qual > low_th)
         
-        HT_postive = HT[mask].reshape(self.batch_size, -1, 4, 4)
+        p_postive = p[mask].reshape(self.batch_size, -1, 3)
         
         
         # loop mode
         for i in range(sample_rounds):
-            grasp = self.grasp_sampler.sample_data(HT_postive, feature[mask].reshape(self.batch_size, -1, 96), self.decoder_rot)
+            grasp = self.grasp_sampler.sample_data(p_postive, feature[mask].reshape(self.batch_size, -1, 96), self.decoder_rot)
             grasp[...,3:] = nn.functional.normalize(grasp[...,3:], dim=-1)
             grasp_qual = self.decoder_grasp_qual(grasp, c, **kwargs)
             if i == 0:

@@ -1,9 +1,7 @@
 import torch
 from igd.ConvONets.conv_onet.models.diffusion import SO3_R3
-from theseus import SO3
 import torch.nn as nn
 import torch.nn.functional as F
-import theseus as th
 import numpy as np
 from diffusers.schedulers.scheduling_ddpm import DDPMScheduler, DDPMSchedulerOutput, randn_tensor
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
@@ -341,22 +339,6 @@ class Diffusion(nn.Module):
             raise ValueError(f"Unsupported prediction type {pred_type}")
 
         
-        ############## quaternion loss reweighted ################
-        # x_0 = predict_start_from_noise(self.noise_scheduler, noisy_data, pred, timesteps)
-        # rot_target = data[...,loss_mask].reshape(batch_size, sample_num, -1)
-        # rot_pred = x_0[...,loss_mask]
-        # rot_pred = nn.functional.normalize(rot_pred, dim=-1).reshape(batch_size, sample_num, -1)
-
-        # quaternion_loss = (1.0 - torch.abs(torch.sum(rot_pred * rot_target, dim=-1))).detach()
-        # quaternion_loss[label.bool()] /= quaternion_loss[label.bool()].sum()
-        
-        # loss = F.mse_loss(pred, target, reduction='none')
-        # # loss *= 0.01
-        # loss = loss[..., loss_mask]
-        # loss = quaternion_loss.unsqueeze(2)[label.bool()] * loss[label.bool()]
-        # loss = loss.sum(-1)
-        ############## quaternion loss reweighted ################
-        
         # original loss
         # loss = loss * loss_mask.type(loss.dtype)
         if self.quality:
@@ -380,21 +362,20 @@ class Diffusion(nn.Module):
             return loss, qual, label
         return loss
 
-    def sample_data(self, HT, c, model):
-        batch_size = HT.size(0)
-        sample_num = HT.size(1)
+    def sample_data(self, p, c, model):
+        batch_size = p.size(0)
+        sample_num = p.size(1)
         # condition_mask = self.condition_mask
 
         scheduler = self.noise_scheduler
         
-        Ht = HT
 
-        H0_in = SO3_R3(R=Ht[...,:3,:3].reshape(-1,3,3), t=Ht[...,:3, -1].reshape(-1,3))
-        noisy_quaternion = torch.randn((batch_size,sample_num,4), device=Ht.device)
+        # H0_in = SO3_R3(R=Ht[...,:3,:3].reshape(-1,3,3), t=Ht[...,:3, -1].reshape(-1,3))
+        noisy_quaternion = torch.randn((batch_size,sample_num,4), device=p.device)
         # viz_traj = []
         # viz_traj.append(noisy_quaternion[0,0,:])
         # noisy_quaternion = self.noise_quaternion(noisy_quaternion)
-        data = torch.cat((Ht[...,:3, -1].reshape(batch_size,sample_num,3), noisy_quaternion), dim=-1)
+        data = torch.cat((p[...,:3].reshape(batch_size,sample_num,3), noisy_quaternion), dim=-1)
         # xw = H0_in.log_map().reshape(batch_size, sample_num,-1)
         # xw = H0_in.log_map().reshape(batch_size, sample_num,-1)
         # width = torch.randn(
@@ -445,75 +426,6 @@ class Diffusion(nn.Module):
         return data
 
 
-class SE3DenoisingLoss():
-
-    def __init__(self, field='denoise', delta = 1., grad=False):
-        self.field = field
-        self.delta = delta
-        self.grad = grad
-
-    # TODO check sigma value
-    def marginal_prob_std(self, t, sigma=0.5):
-        return torch.sqrt((sigma ** (2 * t) - 1.) / (2. * np.log(sigma)))
-
-    def log_gaussian_on_lie_groups(self, x, context):
-        R_p = SO3.exp_map(x[...,3:])
-        delta_H = th.compose(th.inverse(context[0]), R_p)
-        log = delta_H.log_map()
-
-        dt = x[...,:3] - context[1]
-
-        tlog = torch.cat((dt, log), -1)
-        return -0.5 * tlog.pow(2).sum(-1)/(context[2]**2)
-
-    def loss_fn(self, model, model_input, ground_truth, val=False, eps=1e-5):
-
-        ## From Homogeneous transformation to axis-angle ##
-        H = model_input['x_ene_pos']
-        n_grasps = H.shape[1]
-        c = model_input['visual_context']
-        model.set_latent(c, batch=n_grasps)
-
-        H_in = H.reshape(-1, 4, 4)
-        H_in = SO3_R3(R=H_in[:, :3, :3], t=H_in[:, :3, -1])
-        tw = H_in.log_map()
-        #######################
-
-        ## 1. Compute noisy sample SO(3) + R^3##
-        random_t = torch.rand_like(tw[...,0], device=tw.device) * (1. - eps) + eps
-        z = torch.randn_like(tw)
-        std = self.marginal_prob_std(random_t)
-        noise = z * std[..., None]
-        noise_t = noise[..., :3]
-        noise_rot = SO3.exp_map(noise[...,3:])
-        R_p = th.compose(H_in.R, noise_rot)
-        t_p = H_in.t + noise_t
-        #############################
-
-        ## 2. Compute target score ##
-        w_p = R_p.log_map()
-        tw_p = torch.cat((t_p, w_p), -1).requires_grad_()
-        log_p = self.log_gaussian_on_lie_groups(tw_p, context=[H_in.R, H_in.t, std])
-        target_grad = torch.autograd.grad(log_p.sum(), tw_p, only_inputs=True)[0]
-        target_score = target_grad.detach()
-        #############################
-
-        ## 3. Get diffusion grad ##
-        x_in = tw_p.detach().requires_grad_(True)
-        H_in = SO3_R3().exp_map(x_in).to_matrix()
-        t_in = random_t
-        energy = model(H_in, t_in)
-        grad_energy = torch.autograd.grad(energy.sum(), x_in, only_inputs=True,
-                                          retain_graph=True, create_graph=True)[0]
-
-        ## 4. Compute loss ##
-        loss_fn = nn.L1Loss()
-        loss = loss_fn(grad_energy, -target_score)/20.
-
-        info = {self.field: energy}
-        loss_dict = {"Score loss": loss}
-        return loss_dict, info
-    
 
 class FocalLoss(nn.Module):
     def __init__(self, gamma=2, alpha=1):
