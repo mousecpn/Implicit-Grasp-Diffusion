@@ -1,6 +1,9 @@
 # Implicit Grasp Diffusion: Bridging the Gap between Dense Prediction and Sampling-based Grasping
 Accepted by Conference on Robot Learning 2024 (CoRL 2024)
 
+Paper Link: https://proceedings.mlr.press/v270/song25b.html
+Project Link: https://renaud-detry.net/research/2022-kuleuven-neurobotics/
+
 <img width="918" alt="image" src="https://github.com/user-attachments/assets/23850428-0d1a-4bab-a45c-b0c1dc272aa8">
 
 
