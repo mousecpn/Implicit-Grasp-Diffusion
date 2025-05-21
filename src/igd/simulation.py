@@ -65,7 +65,7 @@ class ClutterRemovalSim(object):
         self.size = 6 * self.gripper.finger_depth
         self.intrinsic = CameraIntrinsic(640, 480, 540.0, 540.0, 320.0, 240.0)
         self.camera = self.world.add_camera(self.intrinsic, 0.1, 2.0)
-        self.dot_pattern_ = cv2.imread("/home/pinhao/Desktop/simkinect/data/kinect-pattern_3x3.png", 0)
+
     @property
     def num_objects(self):
         return max(0, self.world.p.getNumBodies() - 1)  # remove table from body count
@@ -384,7 +384,7 @@ class Gripper(object):
 
         self.max_opening_width = 0.08
         self.finger_depth = 0.05
-        self.T_body_tcp = Transform(Rotation.identity(), [0.0, 0.0, 0.03])
+        self.T_body_tcp = Transform(Rotation.identity(), [0.0, 0.0, 0.022])
         self.T_tcp_body = self.T_body_tcp.inverse()
 
     def reset(self, T_world_tcp):
