@@ -13,6 +13,7 @@ from igd.utils.implicit import as_mesh
 import matplotlib.pyplot as plt
 
 LOW_TH = 0.4
+# LOW_TH = 0.2 # pile
 
 class IGD(object):
     def __init__(self, model_path, model_type, best=False, force_detection=False, qual_th=0.9, out_th=0.5, visualize=False, resolution=40, **kwargs):
