@@ -6,7 +6,7 @@ Accepted by Conference on Robot Learning 2024 (CoRL 2024)
 <img width="918" alt="image" src="https://github.com/user-attachments/assets/23850428-0d1a-4bab-a45c-b0c1dc272aa8">
 
 ## ✨ News
-2025.07.25: We release our new work [Equivariant Volumetric Grasping](https://github.com/mousecpn/Equivariant-Volumetric-Grasping)! This repo contains a cleaner implementation of IGD.
+- 2025.07.25: We release our new work [Equivariant Volumetric Grasping](https://github.com/mousecpn/Equivariant-Volumetric-Grasping)! This repo contains a cleaner implementation of IGD.
 
 
 ## Introduction
